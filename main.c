@@ -37,7 +37,20 @@ int compare(char s[], char v[])
     return 1;
 }
 void copierea(char elem[], char snapshot[])
+{struct stat buf;
+  if ((lstat(elem, &buf)) == 0)
+        {
+            printf("a mers bine lstat pt ultimul\n");
+        }
+        else
+            printf("nu a mers bine in functie \n");
+
+        if (S_ISDIR(buf.st_mode))
 {
+            printf("%s este dir/ pt ultimul\n", elem);
+           
+
+    
 
     int file;
     if ((file = open(snapshot, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
@@ -62,6 +75,10 @@ void copierea(char elem[], char snapshot[])
     close(file);
     close(file1);
 }
+ else
+           { printf("%s nu este dir\n", elem);
+       
+           }}
 void parcurg_dir(const char *nume, char snapshot[])
 {
     struct stat buf;
@@ -87,17 +104,20 @@ void parcurg_dir(const char *nume, char snapshot[])
             continue;
 
         char path[1024];
-        // write(int fd, void *buff, size_t nbytes);
+
+        //Calea relativa totala
+
         char newline[] = "\n";
         snprintf(path, sizeof(path), "%s/%s", nume, d->d_name);
         if (lstat(path, &buf) == -1)
             printf("nu a mers bn lstat din parcur dir\n");
 
-        // AICI FAC PENTRU CEL DIN DREICTORUL ULTIM
+
 
         ino_t d_ino = buf.st_ino;
         // printf("i-nod din fis %ld", d_ino);
         // snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
+
         if ((file = open(snapshot, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
         {
             perror("nu s a putut deschide fisierul din file");
@@ -152,7 +172,10 @@ void parcurg_dir(const char *nume, char snapshot[])
             printf("%s este dir\n", d->d_name);
             parcurg_dir(path, snapshot);
         }
+        close (file);
+        
     }
+    closedir(dir);
 }
 int main(int argc, char **argv)
 {
@@ -251,12 +274,14 @@ int main(int argc, char **argv)
         close(file);
         closedir(dir);
         parcurg_dir(argv[i], snapshot);
-        // copierea(argv[argc],snapshot);
 
+         //pt ultimul argument
+
+      
         // COMPARAREA snapshoturilor
         if (snapshotvechi == NULL)
         {
-            copierea(snapshotvechi, snapshot);
+            //copierea(snapshotvechi, snapshot);
             printf("e null;\n");
         }
 
@@ -264,14 +289,16 @@ int main(int argc, char **argv)
         {
             printf("imi intra aici\n");
             if (compare(snapshot, snapshotvechi) == 0)
+          printf("nu nu\n");
+          else printf("da\n");
             // strcpy(snapshotvechi, snapshot);
             // strcpy(snapuri[i], snapshot);
         }
 
         i++;
-        // close(file);
+        //close(file);
         //  close(file);
-        // closedir(dir);
+         //closedir(dir);
     }
     /*DIR *dir;
     i++;
@@ -332,5 +359,7 @@ int main(int argc, char **argv)
         close(file);
     }
 */
+
+
     return 0;
 }
