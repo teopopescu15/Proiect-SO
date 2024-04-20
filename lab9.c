@@ -9,86 +9,51 @@
 #include <unistd.h>
 #define Max 10
 
-int copierefisiere(char s[], char v[])
-{ // deschid cu open ambele si le compar continutul si daca size ul e acelasi la ambe;e si compar continutul cu strcmp la buffer
-   int file,file1;
-
-     if ((file = open(s, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file din compare");
-            exit(-1);
-        }
-         if ((file1 = open(v, O_WRONLY,S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
-        {
-            perror("nu s a putut deschide file1 din compare");
-            exit(-1);
-        }
-        char  buff[100];
-         char  buff1[100];
-        ssize_t f1;
-        
-         while((f1=read(file, &buff, sizeof(buff))) !=0 ){
-           if(write(file1, buff1, sizeof(buff1))==-1 )
-printf("nu se poate scrie in file1 din copierefis\n");
-            }
-           
-         
-        if (close(file) < 0)
-            printf("nu se inchide fisierul file\n");
-        if (close(file1) < 0)
-            printf("nu se inchide fisierul file\n");
-      return 1;
-    }
-
 int compare(char s[], char v[])
 { // deschid cu open ambele si le compar continutul si daca size ul e acelasi la ambe;e si compar continutul cu strcmp la buffer
-   int file,file1;
+    FILE *file = fopen(s, "r");
+    FILE *file1 = fopen(v, "r");
 
-     if ((file = open(s, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file din compare");
-            exit(-1);
-        }
-         if ((file1 = open(v, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file1 din compare");
-            exit(-1);
-        }
-        char  buff[100];
-         char  buff1[100];
-        ssize_t f;
-        ssize_t f1;
-         while((f=read(file, &buff, sizeof(buff))) !=0 && (f1=read(file1, &buff1, sizeof(buff))) !=0){
-            if(f1!=f){
-                close(file);
-                close(file1);
-             return 0;
-            }
-            if(strcmp(buff,buff1)!=0){
-                close(file);
-                close(file1);
-             return 0;
-            }
-         }
-        if (close(file) < 0)
+    if (file == NULL && file1 == NULL)
+    {
+        if (fclose(file) != 0)
             printf("nu se inchide fisierul file\n");
-        if (close(file1) < 0)
+        if (fclose(file1) != 0)
             printf("nu se inchide fisierul file\n");
-      return 1;
+        perror("Eroare la deschiderea fișierelor");
+        return -1; // Ieșiți din funcție dacă nu se pot deschide fișierele
     }
 
-    
+    int ch1, ch2;
+
+    while ((ch1 = fgetc(file)) != EOF && ((ch2 = fgetc(file1)) != EOF))
+    {
+        if (ch1 != ch2)
+        {
+            printf("Fișierele sunt diferite.\n");
+            if (fclose(file) != 0)
+                printf("nu se inchide fisierul file\n");
+            if (fclose(file1) != 0)
+                printf("nu se inchide fisierul file\n");
+            return 0; // adica sunt diferite
+        }
+    }
+    printf("Fis identice\n");
+    if (fclose(file) != 0)
+        printf("nu se inchide fisierul file\n");
+    if (fclose(file1) != 0)
+        printf("nu se inchide fisierul file\n");
+
+    return 1;
+}
 void copierea(char nume[], char snapshot[])
 {
     struct stat buf;
-    if (lstat(nume, &buf) < 0)
-        perror("lstat din copiere nu a mers\n ");
-    if (S_ISDIR(buf.st_mode))
-        printf("este dir in copiere\n");
 
+    int file;
     // char snapshot[1024];
 
-
+    struct dirent *d; // asta cu d_name e calea abs
     DIR *dir;
     if ((dir = opendir(nume)) == NULL)
     {
@@ -99,52 +64,44 @@ void copierea(char nume[], char snapshot[])
     {
         printf("s a deschis  directorul in COPIERE  \n");
     }
-
-    char path[1024];
-
-    // Calea relativa totala
-
-    snprintf(path, sizeof(path), "%s/%s", nume, snapshot);
-    if (lstat(path, &buf) == -1)
-        printf("nu a mers bn lstat din parcur dir in COPIERE  \n");
-
-    int file;
-    if ((file = open(snapshot, O_RDONLY)) < 0)
+    int i = 0;
+    while ((d = readdir(dir)) != NULL && i != 1)
     {
-        perror("nu s a putut deschide fisierul din file");
-        exit(-1);
-    }
-    else
-        printf("s a deschis file in copiere\n");
-    int file1;
 
-    if ((file1 = open(path, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
-    {
-        perror("nu s a putut deschide fisierul din file1");
-        exit(-1);
-    }
-    else
-        printf("s a deschis file1 in copiere\n");
+        if (strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+            continue;
 
-    // ssize_t read(int fd, void *buff, size_t nbytes);
+        char path[1024];
 
-    char buffer[1024];
-    ssize_t size;
-    while ((size = read(file, buffer, sizeof(buffer))) > 0)
-    {
-        if (write(file1, buffer, size) != size)
+        // Calea relativa totala
+
+        char newline[] = "\n";
+        snprintf(path, sizeof(path), "%s/%s", nume, d->d_name);
+        if (lstat(path, &buf) == -1)
+            printf("nu a mers bn lstat din parcur dir in COPIERE  \n");
+
+        int file;
+        if ((file = open(snapshot, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
         {
-            perror("Eroare la scrierea in fisierul destinatar");
-            close(file);
-            close(file1);
-            return;
+            perror("nu s a putut deschide fisierul din file");
+            exit(-1);
         }
+        int file1;
+
+        if ((file1 = open(path, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+        {
+            perror("nu s a putut deschide fisierul din file1");
+            exit(-1);
+        }
+        char buffer[1024];
+        // ssize_t read(int fd, void *buff, size_t nbytes);
+        while (read(file, buffer, sizeof(buffer)) > 0)
+        {
+            write(file1, buffer, sizeof(buffer));
+        }
+        close(file);
+        close(file1);
     }
-
-    close(file);
-    close(file1);
-
-    closedir(dir);
 }
 void parcurg_dir(const char *nume, char snapshot[])
 {
@@ -267,7 +224,6 @@ int main(int argc, char **argv)
         if (S_ISDIR(buf.st_mode))
 
             printf("%s este dir\n", argv[i]);
-        // daca e dir fac fork
 
         else
             printf("%s nu este dir\n", argv[i]);
@@ -285,7 +241,7 @@ int main(int argc, char **argv)
         // Vreau sa mi bag datele in fisierul meu snapshot.txt.prima data sa l deschid
 
         snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
-        snprintf(snapshotnou, sizeof(snapshot), "snapnou%ld.txt", d_ino);
+        snprintf(snapshotnou, sizeof(snapshot), "snapvechi%ld.txt", d_ino);
 
         // snprintf(snapshotnou, sizeof(snapshotnou), "snapshotnou%d.txt", i);
         printf("snapshot din main %s \n ", snapshot);
@@ -340,24 +296,24 @@ int main(int argc, char **argv)
         closedir(dir);
 
         parcurg_dir(argv[i], snapshot);
-        // hai sa mi bat capul cu compararea
-        //  pt ultimul argument
-        printf("ajunge inainte de copiere\n");
-        copierea(argv[argc - 1], snapshot);
+
+        // pt ultimul argument
+        // copierea(argv[argc], snapshot);
 
         // COMPARAREA snapshoturilor
-//daca return=0 inseamna ca sunt dif
-         if (compare(snapshot, snapshotnou) == 1)
-             printf("sunt la fel\n");
-         else
-            { printf("sunt diferite\n");
-         copierea(snapshotnou, snapshot);
 
-     }
-     
+        if (compare(snapshot, snapshotnou) == 0)
+            printf("nu nu\n");
+        else
+        {
+            printf("da\n");
+            copierea(snapshotnou, snapshot);
+        }
 
         i++;
-       
+        // close(file);
+        //   close(file);
+        // closedir(dir);
     }
     // aici wait(); in pagina de man pt wait codul de jos
 

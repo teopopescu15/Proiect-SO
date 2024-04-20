@@ -12,7 +12,7 @@ i-nod:
 e1/e11/corina.txt
 i-nod: 
  16888498602713544
- se scrie size:4
+ se scrie size:6
 e1/raluca.txt
 i-nod: 
  14918173765736991
