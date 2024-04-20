@@ -18,7 +18,7 @@ int copierefisiere(char s[], char v[])
             perror("nu s a putut deschide file din compare");
             exit(-1);
         }
-         if ((file1 = open(v, O_WRONLY,S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+         if ((file1 = open(v, O_RDWR|O_CREAT,S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
         {
             perror("nu s a putut deschide file1 din compare");
             exit(-1);
@@ -289,10 +289,13 @@ int main(int argc, char **argv)
 
         // snprintf(snapshotnou, sizeof(snapshotnou), "snapshotnou%d.txt", i);
         printf("snapshot din main %s \n ", snapshot);
-
+int file1;
         // int open(const char *pathname, int oflag, [, mode_t mode]);
         if ((file = open(snapshot, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
             printf("nu s a deschis snapshot \n");
+               if ((file1 = open(snapshotnou, O_RDWR | O_CREAT , S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
+            printf("nu s a deschis snapshotnou \n");
+
 
         // PENTRU ULTIMUL DIRECTOR
         /* int file1;
@@ -351,7 +354,7 @@ int main(int argc, char **argv)
              printf("sunt la fel\n");
          else
             { printf("sunt diferite\n");
-         copierea(snapshotnou, snapshot);
+         copierefisiere(snapshotnou, snapshot);
 
      }
      
