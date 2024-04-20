@@ -8,74 +8,75 @@
 #include <fcntl.h>
 #include <unistd.h>
 #define Max 10
+#define BUFFER_SIZE 100
 
-int copierefisiere(char s[], char v[])
-{ // deschid cu open ambele si le compar continutul si daca size ul e acelasi la ambe;e si compar continutul cu strcmp la buffer
-   int file,file1;
+void copierefisiere(char v[], char s[]) {
+    int file, file1;
 
-     if ((file = open(s, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file din compare");
-            exit(-1);
-        }
-         if ((file1 = open(v, O_RDWR|O_CREAT,S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
-        {
-            perror("nu s a putut deschide file1 din compare");
-            exit(-1);
-        }
-        char  buff[100];
-         char  buff1[100];
-        ssize_t f1;
-        
-         while((f1=read(file, &buff, sizeof(buff))) !=0 ){
-           if(write(file1, buff1, sizeof(buff1))==-1 )
-printf("nu se poate scrie in file1 din copierefis\n");
-            }
-           
-         
-        if (close(file) < 0)
-            printf("nu se inchide fisierul file\n");
-        if (close(file1) < 0)
-            printf("nu se inchide fisierul file\n");
-      return 1;
+    if ((file = open(s, O_RDONLY)) < 0) {
+        perror("Nu s-a putut deschide fișierul sursă");
+        exit(EXIT_FAILURE);
     }
 
-int compare(char s[], char v[])
-{ // deschid cu open ambele si le compar continutul si daca size ul e acelasi la ambe;e si compar continutul cu strcmp la buffer
-   int file,file1;
-
-     if ((file = open(s, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file din compare");
-            exit(-1);
-        }
-         if ((file1 = open(v, O_RDONLY)) < 0)
-        {
-            perror("nu s a putut deschide file1 din compare");
-            exit(-1);
-        }
-        char  buff[100];
-         char  buff1[100];
-        ssize_t f;
-        ssize_t f1;
-         while((f=read(file, &buff, sizeof(buff))) !=0 && (f1=read(file1, &buff1, sizeof(buff))) !=0){
-            if(f1!=f){
-                close(file);
-                close(file1);
-             return 0;
-            }
-            if(strcmp(buff,buff1)!=0){
-                close(file);
-                close(file1);
-             return 0;
-            }
-         }
-        if (close(file) < 0)
-            printf("nu se inchide fisierul file\n");
-        if (close(file1) < 0)
-            printf("nu se inchide fisierul file\n");
-      return 1;
+    if ((file1 = open(v, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) < 0) {
+        perror("Nu s-a putut deschide fișierul de destinație");
+        exit(EXIT_FAILURE);
     }
+
+    char buff[BUFFER_SIZE];
+    ssize_t bytesRead;
+
+    while ((bytesRead = read(file, buff, BUFFER_SIZE)) > 0) {
+        if (write(file1, buff, bytesRead) != bytesRead) {
+            perror("Eroare la scrierea în fișierul de destinație");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (bytesRead < 0) {
+        perror("Eroare la citirea din fișierul sursă");
+        exit(EXIT_FAILURE);
+    }
+
+    if (close(file) < 0) {
+        perror("Eroare la închiderea fișierului sursă");
+        exit(EXIT_FAILURE);
+    }
+
+    if (close(file1) < 0) {
+        perror("Eroare la închiderea fișierului de destinație");
+        exit(EXIT_FAILURE);
+    }
+}
+
+int compare(char snapshot1[],char snapshot2[] ){
+ int file1 = open(snapshot1, O_RDONLY);
+    int file2 = open(snapshot2, O_RDONLY);
+
+    if (file1 < 0 || file2 < 0) {
+        perror("Eroare la deschiderea fișierelor");
+        return -1;
+    }
+
+    char buffer1[BUFFER_SIZE];
+    char buffer2[BUFFER_SIZE];
+    ssize_t bytesRead1, bytesRead2;
+
+    do {
+        bytesRead1 = read(file1, buffer1, BUFFER_SIZE);
+        bytesRead2 = read(file2, buffer2, BUFFER_SIZE);
+
+        if (bytesRead1 != bytesRead2 || memcmp(buffer1, buffer2, bytesRead1) != 0) {
+            close(file1);
+            close(file2);
+            return 1; // Snapshot-urile sunt diferite
+        }
+    } while (bytesRead1 > 0 && bytesRead2 > 0);
+
+    close(file1);
+    close(file2);
+    return 0; // Snapshot-urile sunt identice
+}
 
     
 void copierea(char nume[], char snapshot[])
@@ -349,8 +350,8 @@ int file1;
         copierea(argv[argc - 1], snapshot);
 
         // COMPARAREA snapshoturilor
-//daca return=0 inseamna ca sunt dif
-         if (compare(snapshot, snapshotnou) == 1)
+//daca return=1 inseamna ca sunt dif
+         if (compare(snapshot, snapshotnou) == 0)
              printf("sunt la fel\n");
          else
             { printf("sunt diferite\n");
