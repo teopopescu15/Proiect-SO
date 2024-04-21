@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
- #include <sys/wait.h>
+#include <sys/wait.h>
 #define Max 10
 #define BUFFER_SIZE 100
 
@@ -261,9 +261,9 @@ int main(int argc, char **argv)
         printf("not enough arguments\n");
         exit(2);
     }
-    int i = 1;
 
-    while (i < argc && strcmp(argv[i], "-o") != 0)
+    int i, nr_proces = 0;
+    for (i = 1; i < argc && strcmp(argv[i], "-o") != 0; i++)
     {
         // aici creez copii cu fork()
         pid_t cpid;
@@ -377,49 +377,49 @@ int main(int argc, char **argv)
                 copierefisiere(snapshotnou, snapshot);
             }
 
-            i++;
             exit(0);
         }
-    }
-        i++;
-         pid_t cpid;
-        if ((cpid = fork()) < 0)
+        else
         {
-            perror("nu s a creat proces fork\n");
-            exit(-1);
+            nr_proces++;
         }
-        if (cpid == 0)
-        { 
-            exit(0);
-        
     }
-    
+
     // ajunge la proces parinte
     //  aici wait(); in pagina de man pt wait codul de jos
+//Intrebari:trb sa fac si pt dir de iesire proces? De ce imi da codul la toate 0?
+    ssize_t wpid;
+    int wstatus;
+    for (i = 0; i < nr_proces; i++)
+    {
 
-      ssize_t wpid;
-      int wstatus;
-  do {
-  
-                   wpid = wait( &wstatus);
-                   if (wpid == -1) {
-                       perror("waitpid");
-                       exit(EXIT_FAILURE);
-         
-                   }
-          else {            /* Code executed by child */
-               printf("Procesul cu PID %ld ",wpid );
+        wpid = wait(&wstatus);
+        if (wpid == -1)
+        {
+            perror("waitpid");
+            exit(EXIT_FAILURE);
+        }
+        else
+        { /* Code executed by child */
+            printf("Procesul cu PID %ld ", wpid);
 
-                   if (WIFEXITED(wstatus)) {
-                       printf("s a terminat cu codul%d\n", WEXITSTATUS(wstatus));
-                   } else if (WIFSIGNALED(wstatus)) {
-                       printf("killed by signal %d\n", WTERMSIG(wstatus));
-                   } else if (WIFSTOPPED(wstatus)) {
-                       printf("stopped by signal %d\n", WSTOPSIG(wstatus));
-                   } else if (WIFCONTINUED(wstatus)) {
-                       printf("continued\n");
-                   }
-           }
-               } while (!WIFEXITED(wstatus) && !WIFSIGNALED(wstatus));
+            if (WIFEXITED(wstatus))
+            {
+                printf("s a terminat cu codul %d\n", WEXITSTATUS(wstatus));
+            }
+            else if (WIFSIGNALED(wstatus))
+            {
+                printf("killed by signal %d\n", WTERMSIG(wstatus));
+            }
+            else if (WIFSTOPPED(wstatus))
+            {
+                printf("stopped by signal %d\n", WSTOPSIG(wstatus));
+            }
+            else if (WIFCONTINUED(wstatus))
+            {
+                printf("continued\n");
+            }
+        }
+    }
     return 0;
 }
