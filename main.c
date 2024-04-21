@@ -7,78 +7,90 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+ #include <sys/wait.h>
 #define Max 10
 #define BUFFER_SIZE 100
 
-void copierefisiere(char v[], char s[]) {
+void copierefisiere(char v[], char s[])
+{
     int file, file1;
 
-    if ((file = open(s, O_RDONLY)) < 0) {
+    if ((file = open(s, O_RDONLY)) < 0)
+    {
         perror("Nu s-a putut deschide fișierul sursă");
         exit(EXIT_FAILURE);
     }
 
-    if ((file1 = open(v, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) < 0) {
+    if ((file1 = open(v, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+    {
         perror("Nu s-a putut deschide fișierul de destinație");
         exit(EXIT_FAILURE);
     }
 
     char buff[BUFFER_SIZE];
-    ssize_t bytesRead;
+    ssize_t size_bytes;
 
-    while ((bytesRead = read(file, buff, BUFFER_SIZE)) > 0) {
-        if (write(file1, buff, bytesRead) != bytesRead) {
+    while ((size_bytes = read(file, buff, BUFFER_SIZE)) > 0)
+    {
+        if (write(file1, buff, size_bytes) != size_bytes)
+        {
             perror("Eroare la scrierea în fișierul de destinație");
             exit(EXIT_FAILURE);
         }
     }
 
-    if (bytesRead < 0) {
+    if (size_bytes < 0)
+    {
         perror("Eroare la citirea din fișierul sursă");
         exit(EXIT_FAILURE);
     }
 
-    if (close(file) < 0) {
+    if (close(file) < 0)
+    {
         perror("Eroare la închiderea fișierului sursă");
         exit(EXIT_FAILURE);
     }
 
-    if (close(file1) < 0) {
+    if (close(file1) < 0)
+    {
         perror("Eroare la închiderea fișierului de destinație");
         exit(EXIT_FAILURE);
     }
 }
 
-int compare(char snapshot1[],char snapshot2[] ){
- int file1 = open(snapshot1, O_RDONLY);
+int compare(char snapshot1[], char snapshot2[])
+{
+    int file1 = open(snapshot1, O_RDONLY);
     int file2 = open(snapshot2, O_RDONLY);
 
-    if (file1 < 0 || file2 < 0) {
+    if (file1 < 0 || file2 < 0)
+    {
         perror("Eroare la deschiderea fișierelor");
         return -1;
     }
 
     char buffer1[BUFFER_SIZE];
     char buffer2[BUFFER_SIZE];
-    ssize_t bytesRead1, bytesRead2;
+    ssize_t size_bytes1, size_bytes2;
 
-    do {
-        bytesRead1 = read(file1, buffer1, BUFFER_SIZE);
-        bytesRead2 = read(file2, buffer2, BUFFER_SIZE);
+    do
+    {
+        size_bytes1 = read(file1, buffer1, BUFFER_SIZE);
+        size_bytes2 = read(file2, buffer2, BUFFER_SIZE);
 
-        if (bytesRead1 != bytesRead2 || memcmp(buffer1, buffer2, bytesRead1) != 0) {
+        if (size_bytes1 != size_bytes2 || memcmp(buffer1, buffer2, size_bytes1) != 0)
+        {
             close(file1);
             close(file2);
             return 1; // Snapshot-urile sunt diferite
         }
-    } while (bytesRead1 > 0 && bytesRead2 > 0);
+    } while (size_bytes1 > 0 && size_bytes2 > 0);
 
     close(file1);
     close(file2);
     return 0; // Snapshot-urile sunt identice
 }
 
-    
 void copierea(char nume[], char snapshot[])
 {
     struct stat buf;
@@ -88,7 +100,6 @@ void copierea(char nume[], char snapshot[])
         printf("este dir in copiere\n");
 
     // char snapshot[1024];
-
 
     DIR *dir;
     if ((dir = opendir(nume)) == NULL)
@@ -252,118 +263,163 @@ int main(int argc, char **argv)
     }
     int i = 1;
 
-    // tipul fisierului int stat(const char *file_name, struct stat *buf);
-
     while (i < argc && strcmp(argv[i], "-o") != 0)
-    { // aici creez copii cu fork()
-        struct stat buf;
-
-        if ((lstat(argv[i], &buf)) == 0)
+    {
+        // aici creez copii cu fork()
+        pid_t cpid;
+        if ((cpid = fork()) < 0)
         {
-            printf("a mers bine lstat\n");
+            perror("nu s a creat proces fork\n");
+            exit(-1);
         }
-        else
-            printf("nu a merrs \n");
+        if (cpid == 0)
+        { // codul fiului
+            printf("snapshot for %s created successfully\n", argv[i]);
+            struct stat buf;
 
-        if (S_ISDIR(buf.st_mode))
+            if ((lstat(argv[i], &buf)) == 0)
+            {
+                printf("a mers bine lstat\n");
+            }
+            else
+                printf("nu a merrs \n");
 
-            printf("%s este dir\n", argv[i]);
-        // daca e dir fac fork
+            if (S_ISDIR(buf.st_mode))
 
-        else
-            printf("%s nu este dir\n", argv[i]);
+                printf("%s este dir\n", argv[i]);
+            // daca e dir fac fork
 
-        DIR *dir;
+            else
+                printf("%s nu este dir\n", argv[i]);
 
-        char snapshot[1024];
-        char snapshotnou[1024];
-        int file; // FILE care contine snapshot
-                  // contine toate snapshoturile
-        if ((dir = opendir(argv[i])) == NULL)
-            printf("nu s a deschis directorul\n");
-        ino_t d_ino = buf.st_ino;
-        // ssize_t write(int fd, void *buff, size_t nbytes);
-        // Vreau sa mi bag datele in fisierul meu snapshot.txt.prima data sa l deschid
+            DIR *dir;
 
-        snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
-        snprintf(snapshotnou, sizeof(snapshot), "snapnou%ld.txt", d_ino);
+            char snapshot[1024];
+            char snapshotnou[1024];
+            int file; // FILE care contine snapshot
+                      // contine toate snapshoturile
+            if ((dir = opendir(argv[i])) == NULL)
+                printf("nu s a deschis directorul\n");
+            ino_t d_ino = buf.st_ino;
+            // ssize_t write(int fd, void *buff, size_t nbytes);
+            // Vreau sa mi bag datele in fisierul meu snapshot.txt.prima data sa l deschid
 
-        // snprintf(snapshotnou, sizeof(snapshotnou), "snapshotnou%d.txt", i);
-        printf("snapshot din main %s \n ", snapshot);
-int file1;
-        // int open(const char *pathname, int oflag, [, mode_t mode]);
-        if ((file = open(snapshot, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
-            printf("nu s a deschis snapshot \n");
-               if ((file1 = open(snapshotnou, O_RDWR | O_CREAT , S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
-            printf("nu s a deschis snapshotnou \n");
+            snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
+            snprintf(snapshotnou, sizeof(snapshot), "snapnou%ld.txt", d_ino);
 
+            // snprintf(snapshotnou, sizeof(snapshotnou), "snapshotnou%d.txt", i);
+            printf("snapshot din main %s \n ", snapshot);
+            int file1;
+            // int open(const char *pathname, int oflag, [, mode_t mode]);
+            if ((file = open(snapshot, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
+                printf("nu s a deschis snapshot \n");
+            if ((file1 = open(snapshotnou, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IXUSR)) == -1)
+                printf("nu s a deschis snapshotnou \n");
 
-        // PENTRU ULTIMUL DIRECTOR
-        /* int file1;
-            char new[2048];
-          snprintf(new, sizeof(new), "%s/%s", argv[argc], snapshot);
+            // PENTRU ULTIMUL DIRECTOR
+            /* int file1;
+                char new[2048];
+              snprintf(new, sizeof(new), "%s/%s", argv[argc], snapshot);
 
-          if((file1=open(new, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
-          {
-              perror("nu s a putut deschide fisierul din file1");
-              exit(-1);
-          }
-          */
-        if (write(file, argv[i], strlen(argv[i])) == -1)
-            printf("eroare de scriere\n");
+              if((file1=open(new, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+              {
+                  perror("nu s a putut deschide fisierul din file1");
+                  exit(-1);
+              }
+              */
+            if (write(file, argv[i], strlen(argv[i])) == -1)
+                printf("eroare de scriere\n");
 
-        /*    if (write(file1, argv[i], strlen(argv[i])) == -1)
-       printf("eroare de scriere\n");*/
+            /*    if (write(file1, argv[i], strlen(argv[i])) == -1)
+           printf("eroare de scriere\n");*/
 
-        // pt i-nod
+            // pt i-nod
 
-        char info[35] = "\ni-nod: ";
-        char container[35];
-        sprintf(container, "%ld", d_ino);
-        write(file, info, strlen(info));
-        write(file, container, strlen(container));
+            char info[35] = "\ni-nod: ";
+            char container[35];
+            sprintf(container, "%ld", d_ino);
+            write(file, info, strlen(info));
+            write(file, container, strlen(container));
 
-        // pt ultim dir
-        /* write(file1, info, strlen(info));
-        write(file1, container, strlen(container));
-*/
-        // size
-        char c[35];
-        strcpy(container, "\n se scrie size:");
-        write(file, container, strlen(container));
-        // write(file1, container, strlen(container));
-        sprintf(c, "%lu", buf.st_size);
-        if (write(file, c, strlen(c)) < 0)
-            printf("nu se scrie size\n");
+            // pt ultim dir
+            /* write(file1, info, strlen(info));
+            write(file1, container, strlen(container));
+    */
+            // size
+            char c[35];
+            strcpy(container, "\n se scrie size:");
+            write(file, container, strlen(container));
+            // write(file1, container, strlen(container));
+            sprintf(c, "%lu", buf.st_size);
+            if (write(file, c, strlen(c)) < 0)
+                printf("nu se scrie size\n");
 
-        /*  if (write(file1, c, strlen(c)) < 0)
-                   printf("nu se scrie size\n");
-       */
-        // parcurg directorul
-        close(file);
-        closedir(dir);
+            /*  if (write(file1, c, strlen(c)) < 0)
+                       printf("nu se scrie size\n");
+           */
+            // parcurg directorul
+            close(file);
+            closedir(dir);
 
-        parcurg_dir(argv[i], snapshot);
-        // hai sa mi bat capul cu compararea
-        //  pt ultimul argument
-        printf("ajunge inainte de copiere\n");
-        copierea(argv[argc - 1], snapshot);
+            parcurg_dir(argv[i], snapshot);
+            // hai sa mi bat capul cu compararea
+            //  pt ultimul argument
+            printf("ajunge inainte de copiere\n");
+            copierea(argv[argc - 1], snapshot);
 
-        // COMPARAREA snapshoturilor
-//daca return=1 inseamna ca sunt dif
-         if (compare(snapshot, snapshotnou) == 0)
-             printf("sunt la fel\n");
-         else
-            { printf("sunt diferite\n");
-         copierefisiere(snapshotnou, snapshot);
+            // COMPARAREA snapshoturilor
+            // daca return=1 inseamna ca sunt dif
+            if (compare(snapshot, snapshotnou) == 0)
+                printf("sunt la fel\n");
+            else
+            {
+                printf("sunt diferite\n");
+                copierefisiere(snapshotnou, snapshot);
+            }
 
-     }
-     
-
-        i++;
-       
+            i++;
+            exit(0);
+        }
     }
-    // aici wait(); in pagina de man pt wait codul de jos
+        i++;
+         pid_t cpid;
+        if ((cpid = fork()) < 0)
+        {
+            perror("nu s a creat proces fork\n");
+            exit(-1);
+        }
+        if (cpid == 0)
+        { 
+            exit(0);
+        
+    }
+    
+    // ajunge la proces parinte
+    //  aici wait(); in pagina de man pt wait codul de jos
 
+      ssize_t wpid;
+      int wstatus;
+  do {
+  
+                   wpid = wait( &wstatus);
+                   if (wpid == -1) {
+                       perror("waitpid");
+                       exit(EXIT_FAILURE);
+         
+                   }
+          else {            /* Code executed by child */
+               printf("Procesul cu PID %ld ",wpid );
+
+                   if (WIFEXITED(wstatus)) {
+                       printf("s a terminat cu codul%d\n", WEXITSTATUS(wstatus));
+                   } else if (WIFSIGNALED(wstatus)) {
+                       printf("killed by signal %d\n", WTERMSIG(wstatus));
+                   } else if (WIFSTOPPED(wstatus)) {
+                       printf("stopped by signal %d\n", WSTOPSIG(wstatus));
+                   } else if (WIFCONTINUED(wstatus)) {
+                       printf("continued\n");
+                   }
+           }
+               } while (!WIFEXITED(wstatus) && !WIFSIGNALED(wstatus));
     return 0;
 }
