@@ -190,7 +190,31 @@ void parcurg_dir(const char *nume, char snapshot[])
         snprintf(path, sizeof(path), "%s/%s", nume, d->d_name);
         if (lstat(path, &buf) == -1)
             printf("nu a mers bn lstat din parcur dir\n");
+if(stat(path,&buf)!=0)
+perror("nu a mers bine stat in parcurg\n");
+int k=0;
+if(S_ISREG(buf.st_mode)){
+    if(
+         if ((buf.st_mode & S_IRUSR)==0) {
+        printf("no reading rights  %s.\n", path);
+        k++;
+    }
 
+    if ((buf.st_mode & S_IWUSR)==0) {
+        printf("no writing rights  %s.\n", path);
+        k++;
+    }
+
+    if ((buf.st_mode & S_IXUSR)==0) {
+        printf("no execution rights  %s.\n", path);
+        k++;
+    }
+    if(k==3){
+        execlp(bash,bash,"script.sh",NULL  );
+        perror("exec failed\n");
+    }
+    )
+}
         ino_t d_ino = buf.st_ino;
         // printf("i-nod din fis %ld", d_ino);
         // snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
@@ -200,25 +224,14 @@ void parcurg_dir(const char *nume, char snapshot[])
             perror("nu s a putut deschide fisierul din file");
             exit(-1);
         }
-        /*int file1;
-             char new[2048];
-            snprintf(new, sizeof(new), "%s/%s", elem, snapshot);
-
-            if((file1=open(new, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
-            {
-                perror("nu s a putut deschide fisierul din file1");
-                exit(-1);
-            }
-            */
+       
+            
         // bag numele
         write(file, newline, strlen(newline));
 
         write(file, path, strlen(path));
 
-        /* write(file1, newline, strlen(newline));
-
-        write(file1, path, strlen(path));
-        */
+      
 
         // bag i nod
 
@@ -242,8 +255,7 @@ void parcurg_dir(const char *nume, char snapshot[])
         /*   if (write(file1, c, strlen(c)) < 0)
         printf("nu se scrie size\n");*/
 
-        if (S_ISREG(buf.st_mode))
-            printf("%s este file\n", d->d_name);
+       
         if (S_ISDIR(buf.st_mode))
         {
             printf("%s este dir\n", d->d_name);
@@ -291,6 +303,7 @@ int main(int argc, char **argv)
 
             else
                 printf("%s nu este dir\n", argv[i]);
+
 
             DIR *dir;
 
