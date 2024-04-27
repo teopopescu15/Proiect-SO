@@ -190,11 +190,10 @@ void parcurg_dir(const char *nume, char snapshot[])
         snprintf(path, sizeof(path), "%s/%s", nume, d->d_name);
         if (lstat(path, &buf) == -1)
             printf("nu a mers bn lstat din parcur dir\n");
-if(stat(path,&buf)!=0)
-perror("nu a mers bine stat in parcurg\n");
+
 int k=0;
 if(S_ISREG(buf.st_mode)){
-    if(
+    
          if ((buf.st_mode & S_IRUSR)==0) {
         printf("no reading rights  %s.\n", path);
         k++;
@@ -210,10 +209,10 @@ if(S_ISREG(buf.st_mode)){
         k++;
     }
     if(k==3){
-        execlp(bash,bash,"script.sh",NULL  );
-        perror("exec failed\n");
+        execlp("./bash.sh", "./bash.sh", path, NULL);
+        perror("exec failed if it got here\n");
     }
-    )
+    
 }
         ino_t d_ino = buf.st_ino;
         // printf("i-nod din fis %ld", d_ino);
