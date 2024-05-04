@@ -158,6 +158,9 @@ void copierea(char nume[], char snapshot[])
 
     closedir(dir);
 }
+
+
+
 void parcurg_dir(const char *nume, char snapshot[])
 {
     struct stat buf;
@@ -193,7 +196,7 @@ void parcurg_dir(const char *nume, char snapshot[])
 
 int k=0;
 if(S_ISREG(buf.st_mode)){
-    
+    printf("%s este FIS ",d->d_name);
          if ((buf.st_mode & S_IRUSR)==0) {
         printf("no reading rights  %s.\n", path);
         k++;
@@ -276,6 +279,7 @@ int main(int argc, char **argv)
     int i, nr_proces = 0;
     for (i = 1; i < argc && strcmp(argv[i], "-o") != 0; i++)
     {
+        printf("\nINCEP CU CATE UN ARGUMENT\n");
         // aici creez copii cu fork()
         pid_t cpid;
         if ((cpid = fork()) < 0)
@@ -297,7 +301,7 @@ int main(int argc, char **argv)
 
             if (S_ISDIR(buf.st_mode))
 
-                printf("%s este dir\n", argv[i]);
+                printf("%s este Dir\n", argv[i]);
             // daca e dir fac fork
 
             else
@@ -374,7 +378,8 @@ int main(int argc, char **argv)
             closedir(dir);
 
             parcurg_dir(argv[i], snapshot);
-            // hai sa mi bat capul cu compararea
+
+            // hai sa mi bat capul cu copierea a tuturor snapshot in ult arg
             //  pt ultimul argument
             printf("ajunge inainte de copiere\n");
             copierea(argv[argc - 1], snapshot);

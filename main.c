@@ -158,6 +158,8 @@ void copierea(char nume[], char snapshot[])
 
     closedir(dir);
 }
+
+
 void parcurg_dir(const char *nume, char snapshot[])
 {
     struct stat buf;
@@ -174,7 +176,7 @@ void parcurg_dir(const char *nume, char snapshot[])
     }
     else
     {
-        printf("s a deschis  directorul in functie\n");
+        printf(" %s s a deschis  directorul in PARG_DIR\n",nume);
     }
     while ((d = readdir(dir)) != NULL)
     {
@@ -193,27 +195,38 @@ void parcurg_dir(const char *nume, char snapshot[])
 
 int k=0;
 if(S_ISREG(buf.st_mode)){
-    
-         if ((buf.st_mode & S_IRUSR)==0) {
+
+    printf("%s AJUNGE CA E FISIER\n",d->d_name);
+         if ((buf.st_mode & S_IRUSR)==0 && (buf.st_mode & S_IRGRP)==0 && (buf.st_mode & S_IROTH)==0) {
         printf("no reading rights  %s.\n", path);
         k++;
+        //return;
     }
+    else printf("read right\n");
 
-    if ((buf.st_mode & S_IWUSR)==0) {
+    if ((buf.st_mode & S_IWUSR)==0 && (buf.st_mode & S_IWGRP)==0 && (buf.st_mode & S_IWOTH)==0) {
         printf("no writing rights  %s.\n", path);
         k++;
+       // return;
     }
 
-    if ((buf.st_mode & S_IXUSR)==0) {
+    if ((buf.st_mode & S_IXUSR)==0 && (buf.st_mode & S_IXGRP)==0 && (buf.st_mode & S_IXOTH)==0) {
         printf("no execution rights  %s.\n", path);
         k++;
+       // return;
     }
+    printf("verifica dreptuirle\n");
     if(k==3){
         execlp("./bash.sh", "./bash.sh", path, NULL);
         perror("exec failed if it got here\n");
     }
-    
+    if(k>=1){
+    printf("este k=1\n");
+     
+    }
 }
+if(k==0)//sa putem pune in screenshot doar cele cu drepturi sau directoarele
+{
         ino_t d_ino = buf.st_ino;
         // printf("i-nod din fis %ld", d_ino);
         // snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
@@ -261,6 +274,7 @@ if(S_ISREG(buf.st_mode)){
             parcurg_dir(path, snapshot);
         }
         close(file);
+    }
     }
     closedir(dir);
 }
@@ -416,7 +430,7 @@ int main(int argc, char **argv)
             printf("Procesul cu PID %ld ", wpid);
 
             if (WIFEXITED(wstatus))
-            {
+            {// ce cod  vrea? al parintelui? 
                 printf("s a terminat cu codul %d\n", WEXITSTATUS(wstatus));
             }
             else if (WIFSIGNALED(wstatus))
