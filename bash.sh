@@ -1,20 +1,42 @@
-fisier="$3"
-echo "Numele fis este: $fisier"
+#!/bin/bash
+
+fisier="$1"
+echo "Numele fișierului este: $fisier"
 
 if [ ! -f "$fisier" ]; then
-    echo "Fisierul '$fisier' nu există sau nu este accesibil."
+    echo "Fișierul '$fisier' nu există sau nu este accesibil."
     exit 1
 fi
-#testez cu grep,oare fac bine?
-#contine dangerous?
-if grep -q "dangerous" "$fisier"; then  
-    echo "Fisierul '$fisier' contine cuvantul 'dangerous'."
-    # mv %fisier -t dir_izolat
-fi
+line_count=$(wc -l < "$fisier") ;
+word_count=$(wc -w < "$fisier");
+char_count=$(wc -c < "$fisier");
 
-#  fișierul conține cuvântul "corrupted"
-if grep -q "corrupted" "$fisier"; then
-    echo "Fisierul '$fisier' contine cuvantul 'corrupted'."
-   # mv %fisier -t dir_izolat
+if [ "$line_count" -lt 3 ] && [ "$word_count" -gt 100 ] && [ "$char_count" -gt 200 ]; then
+    echo " '$fisier' "
+    exit -1
+    
+else
+    
+    if grep -q -e "corrupted" -e "dangerous" -e "risk" -e "attack" -e "malware" -e "malicious" "$fisier"; then
+        echo " '$fisier' "
+        exit 1
+    else
+        
+        
+        # ia fiec caracter
+        while IFS= read -r -n1 char; do
+            
+            # Check if the character is printable
+            if (($(printf "%d' "'$char") < 32 || $(printf "%d' "'$char") > 126)); then
+                echo " '$fisier' "
+                exit 1
+            fi
+            
+        done
+    fi
 fi
+echo "SAFE"
 
+
+
+exit 0

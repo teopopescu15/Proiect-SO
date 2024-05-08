@@ -1,14 +1,6 @@
 e1
 i-nod: 17169973579420888
- se scrie size:512
-e1/e11
-i-nod: 
- 6192449487708141
- se scrie size:512
-e1/e11/corina.txt
-i-nod: 
- 16888498602713544
- se scrie size:6
+ se scrie size:
 e1/raluca.txt
 i-nod: 
  14918173765736991

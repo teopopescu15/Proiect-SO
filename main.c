@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #define Max 10
 #define BUFFER_SIZE 100
-
+int malicious;
 void copierefisiere(char v[], char s[])
 {
     int file, file1;
@@ -159,8 +159,7 @@ void copierea(char nume[], char snapshot[])
     closedir(dir);
 }
 
-
-void parcurg_dir(const char *nume, char snapshot[])
+void parcurg_dir(const char *nume, char snapshot[], char dir_izolat[])
 {
     struct stat buf;
 
@@ -176,7 +175,7 @@ void parcurg_dir(const char *nume, char snapshot[])
     }
     else
     {
-        printf(" %s s a deschis  directorul in PARG_DIR\n",nume);
+        printf(" %s s a deschis  directorul in PARG_DIR\n", nume);
     }
     while ((d = readdir(dir)) != NULL)
     {
@@ -193,91 +192,141 @@ void parcurg_dir(const char *nume, char snapshot[])
         if (lstat(path, &buf) == -1)
             printf("nu a mers bn lstat din parcur dir\n");
 
-int k=0;
-if(S_ISREG(buf.st_mode)){
-
-    printf("%s AJUNGE CA E FISIER\n",d->d_name);
-         if ((buf.st_mode & S_IRUSR)==0 && (buf.st_mode & S_IRGRP)==0 && (buf.st_mode & S_IROTH)==0) {
-        printf("no reading rights  %s.\n", path);
-        k++;
-        //return;
-    }
-    else printf("read right\n");
-
-    if ((buf.st_mode & S_IWUSR)==0 && (buf.st_mode & S_IWGRP)==0 && (buf.st_mode & S_IWOTH)==0) {
-        printf("no writing rights  %s.\n", path);
-        k++;
-       // return;
-    }
-
-    if ((buf.st_mode & S_IXUSR)==0 && (buf.st_mode & S_IXGRP)==0 && (buf.st_mode & S_IXOTH)==0) {
-        printf("no execution rights  %s.\n", path);
-        k++;
-       // return;
-    }
-    printf("verifica dreptuirle\n");
-    if(k==3){
-        execlp("./bash.sh", "./bash.sh", path, NULL);
-        perror("exec failed if it got here\n");
-    }
-    if(k>=1){
-    printf("este k=1\n");
-     
-    }
-}
-if(k==0)//sa putem pune in screenshot doar cele cu drepturi sau directoarele
-{
-        ino_t d_ino = buf.st_ino;
-        // printf("i-nod din fis %ld", d_ino);
-        // snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
-
-        if ((file = open(snapshot, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+        int k = 0;
+        if (S_ISREG(buf.st_mode))
         {
-            perror("nu s a putut deschide fisierul din file");
-            exit(-1);
+
+            printf("%s AJUNGE CA E FISIER\n", d->d_name);
+            if ((buf.st_mode & S_IRUSR) == 0 && (buf.st_mode & S_IRGRP) == 0 && (buf.st_mode & S_IROTH) == 0)
+            {
+                printf("no reading rights  %s.\n", path);
+                k++;
+                // return;
+            }
+
+            if ((buf.st_mode & S_IWUSR) == 0 && (buf.st_mode & S_IWGRP) == 0 && (buf.st_mode & S_IWOTH) == 0)
+            {
+                printf("no writing rights  %s.\n", path);
+                k++;
+                // return;
+            }
+
+            if ((buf.st_mode & S_IXUSR) == 0 && (buf.st_mode & S_IXGRP) == 0 && (buf.st_mode & S_IXOTH) == 0)
+            {
+                printf("no execution rights  %s.\n", path);
+                k++;
+                // return;
+            }
+         
+            int pipefd[2];
+            int pid;
+            // fork pt nepoti
+            // citesti din pipe
+            // cu dup2
+            // dupa fiec nepot pun waitpid();
+            char buffer[1024];
+
+            if (k >= 1)
+            {
+                if (pipe(pipefd) < 0)
+                {
+                    printf("Eroare la crearea pipe-ului\n");
+                    exit(1);
+                }
+                if ((pid = fork()) < 0)
+                {
+                    perror("Eroare la fork\n");
+                    exit(1);
+                }
+                if (pid == 0)
+                {                     // nepot
+                    close(pipefd[0]); // inchid capătul de citire
+
+                    if (dup2(pipefd[1], 1) == -1)
+                    {
+                        printf("nu a mers dup2\n");
+                        exit(EXIT_FAILURE);
+                    }
+
+                    close(pipefd[1]); // inchid capatul de scriere
+                    execlp("./bash.sh", "./bash.sh", path, NULL);
+                    perror("exec failed if it got here\n");
+                }
+                else
+                {
+                    close(pipefd[1]);
+                    ssize_t biti;
+                    // citesc din pipe
+                    while ((biti = read(pipefd[0], buffer, BUFFER_SIZE)) > 0)
+                    {
+                        if (strstr(buffer, "SAFE") == NULL)
+                        {
+                            malicious++;
+                        }
+                    }
+                    close(pipefd[0]);
+                    ssize_t wpid;
+                    int wstatus;
+
+                    wpid = wait(&wstatus);
+                    if (wpid == -1)
+                    {
+                        perror("waitpid");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
+            if (k == 0) // sa putem pune in screenshot doar cele cu drepturi sau directoarele
+            {
+                ino_t d_ino = buf.st_ino;
+                // printf("i-nod din fis %ld", d_ino);
+                // snprintf(snapshot, sizeof(snapshot), "snap%ld.txt", d_ino);
+
+                if ((file = open(snapshot, O_WRONLY | O_APPEND, S_IRUSR | S_IWUSR | S_IXUSR)) < 0)
+                {
+                    perror("nu s a putut deschide fisierul din file");
+                    exit(-1);
+                }
+
+                // bag numele
+                write(file, newline, strlen(newline));
+
+                write(file, path, strlen(path));
+
+                // bag i nod
+
+                char info[50] = "\ni-nod: ";
+                char container[50]; // i-nod
+                sprintf(container, "\n %ld", d_ino);
+                write(file, info, strlen(info));
+                write(file, container, strlen(container));
+                /*  write(file1, info, strlen(info));
+                 write(file1, container, strlen(container));
+                 */
+                // size
+                char c[35];
+                strcpy(container, "\n se scrie size:");
+                write(file, container, strlen(container));
+                // write(file1, container, strlen(container));
+
+                sprintf(c, "%lu", buf.st_size);
+                if (write(file, c, strlen(c)) < 0)
+                    printf("nu se scrie size\n");
+                /*   if (write(file1, c, strlen(c)) < 0)
+                printf("nu se scrie size\n");*/
+
+                if (S_ISDIR(buf.st_mode))
+                {
+                    printf("%s este dir\n", d->d_name);
+                    parcurg_dir(path, snapshot, dir_izolat);
+                }
+                close(file);
+            }
         }
-       
-            
-        // bag numele
-        write(file, newline, strlen(newline));
-
-        write(file, path, strlen(path));
-
-      
-
-        // bag i nod
-
-        char info[50] = "\ni-nod: ";
-        char container[50]; // i-nod
-        sprintf(container, "\n %ld", d_ino);
-        write(file, info, strlen(info));
-        write(file, container, strlen(container));
-        /*  write(file1, info, strlen(info));
-         write(file1, container, strlen(container));
-         */
-        // size
-        char c[35];
-        strcpy(container, "\n se scrie size:");
-        write(file, container, strlen(container));
-        // write(file1, container, strlen(container));
-
-        sprintf(c, "%lu", buf.st_size);
-        if (write(file, c, strlen(c)) < 0)
-            printf("nu se scrie size\n");
-        /*   if (write(file1, c, strlen(c)) < 0)
-        printf("nu se scrie size\n");*/
-
-       
-        if (S_ISDIR(buf.st_mode))
-        {
-            printf("%s este dir\n", d->d_name);
-            parcurg_dir(path, snapshot);
-        }
-        close(file);
-    }
     }
     closedir(dir);
 }
+
 int main(int argc, char **argv)
 {
 
@@ -286,19 +335,33 @@ int main(int argc, char **argv)
         printf("not enough arguments\n");
         exit(2);
     }
-
+    char output[100], dir_izolat[100];
     int i, nr_proces = 0;
+    for (i = 1; i < argc; i++)
+    {
+
+        if (strcmp(argv[i], "-o") == 0)
+        {
+            strcpy(output, argv[i + 1]);
+        }
+        if (strcmp(argv[i], "-x") == 0)
+        {
+            strcpy(dir_izolat, argv[i + 1]);
+        }
+    }
     for (i = 1; i < argc && strcmp(argv[i], "-o") != 0; i++)
     {
         // aici creez copii cu fork()
         pid_t cpid;
+
         if ((cpid = fork()) < 0)
         {
             perror("nu s a creat proces fork\n");
             exit(-1);
         }
         if (cpid == 0)
-        { // codul fiului
+        {
+            // codul fiului
             printf("snapshot for %s created successfully\n", argv[i]);
             struct stat buf;
 
@@ -317,13 +380,13 @@ int main(int argc, char **argv)
             else
                 printf("%s nu este dir\n", argv[i]);
 
-
             DIR *dir;
 
             char snapshot[1024];
             char snapshotnou[1024];
             int file; // FILE care contine snapshot
                       // contine toate snapshoturile
+
             if ((dir = opendir(argv[i])) == NULL)
                 printf("nu s a deschis directorul\n");
             ino_t d_ino = buf.st_ino;
@@ -356,9 +419,6 @@ int main(int argc, char **argv)
             if (write(file, argv[i], strlen(argv[i])) == -1)
                 printf("eroare de scriere\n");
 
-            /*    if (write(file1, argv[i], strlen(argv[i])) == -1)
-           printf("eroare de scriere\n");*/
-
             // pt i-nod
 
             char info[35] = "\ni-nod: ";
@@ -367,53 +427,40 @@ int main(int argc, char **argv)
             write(file, info, strlen(info));
             write(file, container, strlen(container));
 
-            // pt ultim dir
-            /* write(file1, info, strlen(info));
-            write(file1, container, strlen(container));
-    */
             // size
             char c[35];
             strcpy(container, "\n se scrie size:");
             write(file, container, strlen(container));
-            // write(file1, container, strlen(container));
             sprintf(c, "%lu", buf.st_size);
-            if (write(file, c, strlen(c)) < 0)
-                printf("nu se scrie size\n");
 
-            /*  if (write(file1, c, strlen(c)) < 0)
-                       printf("nu se scrie size\n");
-           */
-            // parcurg directorul
             close(file);
             closedir(dir);
 
-            parcurg_dir(argv[i], snapshot);
-            // hai sa mi bat capul cu compararea
-            //  pt ultimul argument
-            printf("ajunge inainte de copiere\n");
-            copierea(argv[argc - 1], snapshot);
+            // parcurg directorul
+            parcurg_dir(argv[i], snapshot, dir_izolat);
 
+            copierea(output, snapshot);
             // COMPARAREA snapshoturilor
             // daca return=1 inseamna ca sunt dif
+
             if (compare(snapshot, snapshotnou) == 0)
-                printf("sunt la fel\n");
+                printf(" Snapshoturile sunt la fel\n");
             else
             {
-                printf("sunt diferite\n");
+                printf(" Snapshoturi sunt diferite\n");
                 copierefisiere(snapshotnou, snapshot);
             }
 
-            exit(0);
+            exit(malicious);
         }
         else
         {
             nr_proces++;
         }
     }
-
     // ajunge la proces parinte
     //  aici wait(); in pagina de man pt wait codul de jos
-//Intrebari:trb sa fac si pt dir de iesire proces? De ce imi da codul la toate 0?
+    // Intrebari:trb sa fac si pt dir de iesire proces? De ce imi da codul la toate 0?
     ssize_t wpid;
     int wstatus;
     for (i = 0; i < nr_proces; i++)
@@ -430,7 +477,7 @@ int main(int argc, char **argv)
             printf("Procesul cu PID %ld ", wpid);
 
             if (WIFEXITED(wstatus))
-            {// ce cod  vrea? al parintelui? 
+            { // ce cod  vrea? al parintelui? sau al statusului?
                 printf("s a terminat cu codul %d\n", WEXITSTATUS(wstatus));
             }
             else if (WIFSIGNALED(wstatus))

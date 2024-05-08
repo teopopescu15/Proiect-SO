@@ -1,0 +1,40 @@
+snapshot for e2 created successfully
+a mers bine lstat
+e2 este dir
+snapshot din main snap13792273858894258.txt 
+  e2 s a deschis  directorul in PARG_DIR
+e5 este dir
+ e2/e5 s a deschis  directorul in PARG_DIR
+fish.txt AJUNGE CA E FISIER
+no writing rights  e2/e5/fish.txt.
+verifica dreptuirle
+este k=1
+linda.txt AJUNGE CA E FISIER
+verifica dreptuirle
+este dir in copiere
+s a deschis  directorul in COPIERE  
+s a deschis file in copiere
+s a deschis file1 in copiere
+ Snapshoturile sunt la fel
+snapshot for e1 created successfully
+a mers bine lstat
+e1 este dir
+snapshot din main snap17169973579420888.txt 
+  e1 s a deschis  directorul in PARG_DIR
+carla.txt AJUNGE CA E FISIER
+no writing rights  e1/carla.txt.
+verifica dreptuirle
+este k=1
+e11 este dir
+ e1/e11 s a deschis  directorul in PARG_DIR
+corina.txt AJUNGE CA E FISIER
+verifica dreptuirle
+raluca.txt AJUNGE CA E FISIER
+verifica dreptuirle
+este dir in copiere
+s a deschis  directorul in COPIERE  
+s a deschis file in copiere
+s a deschis file1 in copiere
+ Snapshoturile sunt la fel
+Procesul cu PID 15865 s a terminat cu codul 0
+Procesul cu PID 15864 s a terminat cu codul 0

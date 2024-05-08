@@ -238,4 +238,64 @@ i-nod:
 e2/linda.txt
 i-nod: 
  10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:512
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:512
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/linda.txt
+i-nod: 
+ 10414574138369543
  se scrie size:5
