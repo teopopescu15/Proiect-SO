@@ -64,4 +64,124 @@ i-nod: 17169973579420888
 e1/raluca.txt
 i-nod: 
  14918173765736991
- se scrie size:3
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:3e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:14e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:14e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/raluca.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:14e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/e11
+i-nod: 
+ 6192449487708141
+ se scrie size:512
+e1/e11/safe1.txt
+i-nod: 
+ 16888498602713544
+ se scrie size:6
+e1/malitios.txt
+i-nod: 
+ 9288674231552239
+ se scrie size:21
+e1/safe4.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:12e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/e11
+i-nod: 
+ 6192449487708141
+ se scrie size:512
+e1/e11/safe1.txt
+i-nod: 
+ 16888498602713544
+ se scrie size:6
+e1/malitios.txt
+i-nod: 
+ 9288674231552239
+ se scrie size:21
+e1/safe4.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:12e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/e11
+i-nod: 
+ 6192449487708141
+ se scrie size:512
+e1/e11/safe1.txt
+i-nod: 
+ 16888498602713544
+ se scrie size:6
+e1/malitios.txt
+i-nod: 
+ 9288674231552239
+ se scrie size:21
+e1/safe4.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:12e1
+i-nod: 17169973579420888
+ se scrie size:
+e1/e11
+i-nod: 
+ 6192449487708141
+ se scrie size:512
+e1/e11/safe1.txt
+i-nod: 
+ 16888498602713544
+ se scrie size:6
+e1/malitios.txt
+i-nod: 
+ 9288674231552239
+ se scrie size:21
+e1/safe4.txt
+i-nod: 
+ 14918173765736991
+ se scrie size:12

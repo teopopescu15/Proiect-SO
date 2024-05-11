@@ -54,4 +54,108 @@ i-nod: 13792273858894258
 e2/linda.txt
 i-nod: 
  10414574138369543
- se scrie size:5
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:5e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/linda.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/e5/malitios2.txt
+i-nod: 
+ 21673573206762008
+ se scrie size:9
+e2/good.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/e5/malitios2.txt
+i-nod: 
+ 21673573206762008
+ se scrie size:9
+e2/good.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/e5/malitios2.txt
+i-nod: 
+ 21673573206762008
+ se scrie size:9
+e2/good.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13e2
+i-nod: 13792273858894258
+ se scrie size:
+e2/e5
+i-nod: 
+ 47569271064123517
+ se scrie size:512
+e2/e5/malitios2.txt
+i-nod: 
+ 21673573206762008
+ se scrie size:9
+e2/good.txt
+i-nod: 
+ 10414574138369543
+ se scrie size:13
